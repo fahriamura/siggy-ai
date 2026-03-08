@@ -20,7 +20,8 @@ import type { ChatAPIMessage, Emotion, StreamEvent } from '@/types';
 export const runtime = 'nodejs';
 
 // ── OpenAI client ─────────────────────────────────────────────
-console.log('KEY:', process.env.OPENAI_API_KEY?.slice(0,10));
+console.log('KEY length:', process.env.OPENAI_API_KEY?.length);
+console.log('KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-'));
 if (!process.env.OPENAI_API_KEY) {
   console.error('OPENAI_API_KEY is not set!');
 }
