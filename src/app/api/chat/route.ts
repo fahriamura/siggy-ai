@@ -61,6 +61,7 @@ function validateMessages(raw: unknown): ChatAPIMessage[] {
 
 // ── Route handler ─────────────────────────────────────────────
 export async function POST(req: NextRequest): Promise<Response> {
+  console.log('POST /api/chat received');
   // ── 1. Parse & validate ──────────────────────────────────────
   let messages: ChatAPIMessage[];
   try {
