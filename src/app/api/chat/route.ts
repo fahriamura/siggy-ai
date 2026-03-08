@@ -21,6 +21,9 @@ export const runtime = 'nodejs';
 
 // ── OpenAI client ─────────────────────────────────────────────
 console.log('KEY:', process.env.OPENAI_API_KEY?.slice(0,10));
+if (!process.env.OPENAI_API_KEY) {
+  console.error('OPENAI_API_KEY is not set!');
+}
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY ?? '',
 });
@@ -83,8 +86,10 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       // Emit emotion first so sprite updates before text arrives
       push({ type: 'emotion', emotion });
+      console.log('Emotion emitted:', emotion);
 
       try {
+        console.log('Calling OpenAI with model:', MODEL);
         const openaiStream = await openai.chat.completions.create({
           model:      MODEL,
           stream:     true,
@@ -108,6 +113,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         push({ type: 'done' });
 
       } catch (err) {
+        console.error('OpenAI Error:', err);
         const message = err instanceof Error ? err.message : 'Stream error';
         push({ type: 'error', message });
       } finally {
