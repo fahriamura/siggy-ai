@@ -1,4 +1,4 @@
-export { default as Button }       from './Button';
-export { default as Toggle }       from './Toggle';
-export { default as GlassPanel }   from './GlassPanel';
-export { default as EmotionBadge } from './EmotionBadge';
+export { default as Button }       from './buttons';
+export { default as Toggle }       from './toggles';
+export { default as GlassPanel }   from './glasspanels';
+export { default as EmotionBadge } from './EmotionBadges';
