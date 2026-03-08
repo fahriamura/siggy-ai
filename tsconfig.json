@@ -1,0 +1,60 @@
+{
+  "compilerOptions": {
+    // ── Output target ────────────────────────────────────────
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+
+    // ── Module resolution ────────────────────────────────────
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+
+    // ── JSX ──────────────────────────────────────────────────
+    "jsx": "preserve",
+
+    // ── Strictness ───────────────────────────────────────────
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+
+    // ── Emit ─────────────────────────────────────────────────
+    // Next.js handles compilation — TypeScript only type-checks
+    "noEmit": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "incremental": true,
+
+    // ── Plugins ──────────────────────────────────────────────
+    "plugins": [
+      { "name": "next" }
+    ],
+
+    // ── Path aliases — mirrors the @/* used across all source files ──
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/hooks/*":      ["./src/hooks/*"],
+      "@/lib/*":        ["./src/lib/*"],
+      "@/stores/*":     ["./src/stores/*"],
+      "@/types/*":      ["./src/types/*"],
+      "@/styles/*":     ["./src/styles/*"]
+    }
+  },
+
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+
+  "exclude": [
+    "node_modules"
+  ]
+}
