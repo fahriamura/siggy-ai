@@ -1,9 +1,16 @@
 import type { Metadata } from 'next';
+import type { Viewport } from 'next';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
   title: 'Harmonic Siggy',
   description: 'An expressive AI companion experience',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover', // enables env(safe-area-inset-*)
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

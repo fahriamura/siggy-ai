@@ -176,7 +176,10 @@ export default function VNDialogBox({
 
   return (
     <div
-      style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 30, padding: '0 20px 16px' }}
+      style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 30,
+        padding: '0 20px calc(16px + env(safe-area-inset-bottom, 0px))',
+      }}
       onClick={!inputMode && !isLoading && pages.length > 0 ? handleAdvance : undefined}
     >
       {/* Name tag */}
