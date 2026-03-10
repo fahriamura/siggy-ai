@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { sfx } from '@/lib/sfx/manager';
 import { useVNChat } from '@/hooks/useChat';
 import { useCharacterStore } from '@/stores';
+import { useSettingsStore } from '@/stores';
 import { CHARACTER } from '@/lib/ai/config';
 import VNDialogBox from '@/components/vn/vndialogboxes';
 import VNTopBar    from '@/components/vn/vntopbars';
@@ -27,10 +28,21 @@ export default function ChatPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [bgLoaded, setBgLoaded]       = useState(false);
   const { emotion } = useCharacterStore();
+  const settings = useSettingsStore();
 
   const { response, inputMode, isLoading, isStreaming, sendMessage, onDialogDone } = useVNChat();
 
   useEffect(() => { sfx.init(); }, []);
+  
+  // Apply settings to sfx manager
+  useEffect(() => {
+    sfx.configure(settings.sfxEnabled, settings.sfxVolume);
+  }, [settings.sfxEnabled, settings.sfxVolume]);
+  
+  // Apply BGM settings
+  useEffect(() => {
+    sfx.playBgMusic(settings.bgMusicEnabled, settings.bgMusicVolume);
+  }, [settings.bgMusicEnabled, settings.bgMusicVolume]);
 
   useEffect(() => {
     const img = new window.Image();

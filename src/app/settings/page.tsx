@@ -149,23 +149,57 @@ export default function SettingsPage() {
             <Row label="Show Timestamps">
               <Toggle checked={settings.showTimestamps} onChange={() => set({ showTimestamps: !settings.showTimestamps })} />
             </Row>
-
-            <Row label="Auto-scroll" description="Scroll to latest message automatically">
-              <Toggle checked={settings.autoScroll} onChange={() => set({ autoScroll: !settings.autoScroll })} />
-            </Row>
           </Section>
 
           {/* ── About ── */}
           <Section title="About">
             <div
-              className="rounded-lg p-4 space-y-1"
+              className="rounded-lg p-4 space-y-3"
               style={{ background: 'rgba(255,255,255,.02)', border: '1px solid var(--vn-border)' }}
             >
-              <div style={{ fontFamily: 'var(--font-body)', color: 'var(--vn-text-dim)', fontSize: '0.9rem' }}>
-                Visual Novel AI Chat &mdash; v0.1.0
+              <div style={{ fontFamily: 'var(--font-body)', color: 'var(--vn-text)', fontSize: '0.95rem', fontWeight: 500 }}>
+                Harmonic Siggy - Interactive Visual AI
               </div>
+              
+              {/* Credits with Twitter links */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="vn-label opacity-50 normal-case" style={{ letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+                    Made by Absol
+                  </div>
+                  <a
+                    href="https://x.com/jelenemae"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="opacity-40 hover:opacity-100 transition-opacity"
+                    title="Follow Absol on Twitter"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--vn-text)' }}>
+                      <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 9 0 11-4s1-6.08 0-7.5a4.5 4.5 0 00-.5-1.5z"/>
+                    </svg>
+                  </a>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <div className="vn-label opacity-50 normal-case" style={{ letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+                    Assets by Celine
+                  </div>
+                  <a
+                    href="https://x.com/celinemamboo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="opacity-40 hover:opacity-100 transition-opacity"
+                    title="Follow Celine on Twitter"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'var(--vn-text)' }}>
+                      <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 9 0 11-4s1-6.08 0-7.5a4.5 4.5 0 00-.5-1.5z"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              
               <div className="vn-label opacity-30 normal-case" style={{ letterSpacing: '0.05em', fontSize: '0.65rem' }}>
-                Powered by Claude · Built with Next.js
+                Built with Next.js & Claude AI
               </div>
             </div>
           </Section>

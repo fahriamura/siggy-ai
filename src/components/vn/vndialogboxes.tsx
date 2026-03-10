@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useRef, KeyboardEvent, useCallback } from 'react';
 import type { Emotion } from '@/types';
+import { sfx } from '@/lib/sfx/manager';
+import { useSettingsStore } from '@/stores';
 
 interface Props {
   speakerName: string;
@@ -91,6 +93,18 @@ export default function VNDialogBox({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const accent = EMOTION_COLOR[emotion];
+  const settings = useSettingsStore();
+  
+  // Calculate typing speed from settings
+  const getTypingSpeed = () => {
+    switch (settings.textSpeed) {
+      case 'slow': return 60;
+      case 'normal': return 28;
+      case 'fast': return 10;
+      case 'instant': return 0;
+      default: return 28;
+    }
+  };
 
   // New response object → re-paginate and restart from page 0
   useEffect(() => {
@@ -102,9 +116,6 @@ export default function VNDialogBox({
       return;
     }
     const newPages = paginateText(response.text);
-    // Debug: log to console so you can verify all text is present
-    console.log('[VNDialogBox] response id:', response.id, '| pages:', newPages.length);
-    newPages.forEach((p, i) => console.log(`  page ${i + 1} (${p.length} chars):`, p));
     setPages(newPages);
     setPageIndex(0);
     setDisplayedChars(0);
@@ -113,18 +124,43 @@ export default function VNDialogBox({
   // Typewriter per page
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    if (pages.length === 0 || isLoading) return;
+    if (pages.length === 0 || isLoading) {
+      sfx.stopTyping();
+      return;
+    }
     const currentPage = pages[pageIndex] ?? '';
     let i = 0;
     setDisplayedChars(0);
-    const tick = () => {
-      i = Math.min(i + 3, currentPage.length);
-      setDisplayedChars(i);
-      if (i < currentPage.length) timerRef.current = setTimeout(tick, 28);
+    
+    const typingSpeed = getTypingSpeed();
+    
+    // Start typing SFX only if typing speed > 0 (not instant)
+    if (typingSpeed > 0 && settings.typingSfxEnabled) {
+      sfx.startTyping();
+    }
+    
+    if (typingSpeed === 0) {
+      // Instant mode - show all text immediately
+      setDisplayedChars(currentPage.length);
+      sfx.stopTyping();
+    } else {
+      const tick = () => {
+        i = Math.min(i + 3, currentPage.length);
+        setDisplayedChars(i);
+        if (i < currentPage.length) timerRef.current = setTimeout(tick, typingSpeed);
+        else {
+          // Stop typing SFX when page finishes typing
+          sfx.stopTyping();
+        }
+      };
+      timerRef.current = setTimeout(tick, typingSpeed);
+    }
+    
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      sfx.stopTyping();
     };
-    timerRef.current = setTimeout(tick, 28);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [pageIndex, pages]);
+  }, [pageIndex, pages, settings.textSpeed, settings.typingSfxEnabled]);
 
   // Auto-focus textarea on input mode
   useEffect(() => {
@@ -145,9 +181,14 @@ export default function VNDialogBox({
     if (isTyping) {
       if (timerRef.current) clearTimeout(timerRef.current);
       setDisplayedChars(currentPage.length);
+      sfx.stopTyping();
       return;
     }
-    if (!isLastPage) { setPageIndex(p => p + 1); return; }
+    if (!isLastPage) {
+      setPageIndex(p => p + 1);
+      return;
+    }
+    sfx.stopTyping();
     onAdvance();
   }, [inputMode, isLoading, pages.length, isTyping, isLastPage, currentPage.length, onAdvance]);
 

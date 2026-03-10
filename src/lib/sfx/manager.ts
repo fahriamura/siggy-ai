@@ -52,6 +52,8 @@ const UI_SFX = {
   open:     '/sfx/ui/open.mp3',
 };
 
+const BG_MUSIC = '/sfx/background/background.mp3';
+
 class SFXManager {
   private ready = false;
   private enabled = true;
@@ -63,7 +65,9 @@ class SFXManager {
   private typingPool: HowlInstance[] = [];
   private typingIdx = 0;
   private typingTimer: ReturnType<typeof setInterval> | null = null;
+  private typingPlaybackId: number | null = null;
   private bgMusic: HowlInstance | null = null;
+  private bgMusicPlaying: boolean = false;
 
   async init() {
     if (this.ready || typeof window === 'undefined') return;
@@ -75,6 +79,16 @@ class SFXManager {
   configure(enabled: boolean, volume: number) {
     this.enabled = enabled;
     this.volume = volume;
+  }
+
+  configureBgMusic(enabled: boolean, volume: number) {
+    if (!this.bgMusic) return;
+    if (enabled) {
+      this.bgMusic.volume(volume);
+      this.bgMusic.play();
+    } else {
+      this.bgMusic.stop();
+    }
   }
 
   playEmotion(e: Emotion) {
@@ -103,13 +117,19 @@ class SFXManager {
   }
 
   startTyping(ms = 75) {
-    if (!this.enabled || !this.ready || this.typingTimer) return;
+    if (!this.enabled || !this.ready || this.typingTimer) {
+      return;
+    }
+    // Stop any previously playing typing sound
+    this.stopTyping();
+    // Reset index for new typing sequence
+    this.typingIdx = 0;
     // build typing pool lazily if necessary (async)
     const makePool = () => {
       if (this.typingPool.length === 0) {
         return getHowl().then((Howl) => {
           for (const src of TYPING_SFX) {
-            this.typingPool.push(new Howl({ src: [src], volume: this.volume * 0.25, preload: true }));
+            this.typingPool.push(new Howl({ src: [src], volume: this.volume * 0.7, preload: true, loop: false }));
           }
         });
       }
@@ -118,14 +138,61 @@ class SFXManager {
     makePool().finally(() => {
       this.typingTimer = setInterval(() => {
         const s = this.typingPool[this.typingIdx % this.typingPool.length];
-        s?.play();
+        this.typingPlaybackId = s?.play() ?? null;
         this.typingIdx++;
       }, ms);
     });
   }
 
   stopTyping() {
-    if (this.typingTimer) { clearInterval(this.typingTimer); this.typingTimer = null; }
+    if (this.typingTimer) {
+      clearInterval(this.typingTimer);
+      this.typingTimer = null;
+    }
+    // Stop all typing sounds
+    for (let i = 0; i < this.typingPool.length; i++) {
+      const sound = this.typingPool[i];
+      sound?.stop();
+    }
+    this.typingPlaybackId = null;
+  }
+
+  async playBgMusic(enabled: boolean = true, volume: number = 0.25) {
+    if (!this.ready || typeof window === 'undefined') return;
+    
+    if (!this.bgMusic) {
+      const Howl = await getHowl();
+      this.bgMusic = new Howl({
+        src: [BG_MUSIC],
+        volume: volume * 0.4,
+        loop: true,
+        preload: true,
+        html5: true,
+      });
+    }
+    
+    const targetVolume = volume * 0.4;
+    
+    if (enabled && !this.bgMusicPlaying) {
+      // Only play if not already playing
+      this.bgMusic.volume(targetVolume);
+      this.bgMusic.play();
+      this.bgMusicPlaying = true;
+    } else if (enabled && this.bgMusicPlaying) {
+      // Already playing, just update volume
+      this.bgMusic.volume(targetVolume);
+    } else if (!enabled && this.bgMusicPlaying) {
+      // Stop if was playing
+      this.bgMusic.stop();
+      this.bgMusicPlaying = false;
+    }
+  }
+
+  stopBgMusic() {
+    if (this.bgMusic && this.bgMusicPlaying) {
+      this.bgMusic.stop();
+      this.bgMusicPlaying = false;
+    }
   }
 }
 

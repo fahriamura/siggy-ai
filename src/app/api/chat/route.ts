@@ -14,19 +14,18 @@ import { NextRequest } from 'next/server';
 import OpenAI from 'openai';
 import { analyzeConversation } from '@/lib/sentiment/analyzer';
 import { CHARACTER } from '@/lib/ai/config';
+import { buildEnhancedSystemPrompt } from '@/lib/ai/knowledge-loader';
 import type { ChatAPIMessage, Emotion, StreamEvent } from '@/types';
 
 // ── Node.js runtime — required to read .env.local variables ──
 export const runtime = 'nodejs';
 
 // ── OpenAI client ─────────────────────────────────────────────
-console.log('KEY length:', process.env.OPENAI_API_KEY?.length);
-console.log('KEY starts with sk-:', process.env.OPENAI_API_KEY?.startsWith('sk-'));
 if (!process.env.OPENAI_API_KEY) {
-  console.error('OPENAI_API_KEY is not set!');
+  throw new Error('OPENAI_API_KEY is not set');
 }
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY ?? '',
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // ── Constants ─────────────────────────────────────────────────
@@ -61,7 +60,6 @@ function validateMessages(raw: unknown): ChatAPIMessage[] {
 
 // ── Route handler ─────────────────────────────────────────────
 export async function POST(req: NextRequest): Promise<Response> {
-  console.log('POST /api/chat received');
   // ── 1. Parse & validate ──────────────────────────────────────
   let messages: ChatAPIMessage[];
   try {
@@ -88,16 +86,15 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       // Emit emotion first so sprite updates before text arrives
       push({ type: 'emotion', emotion });
-      console.log('Emotion emitted:', emotion);
 
       try {
-        console.log('Calling OpenAI with model:', MODEL);
+        const enhancedPrompt = buildEnhancedSystemPrompt(CHARACTER.systemPrompt);
         const openaiStream = await openai.chat.completions.create({
           model:      MODEL,
           stream:     true,
           messages: [
-            // System prompt as first message
-            { role: 'system', content: CHARACTER.systemPrompt },
+            // Enhanced system prompt with knowledge base
+            { role: 'system', content: enhancedPrompt },
             // Conversation history
             ...trimmed.map(m => ({
               role:    m.role as 'user' | 'assistant',
@@ -115,7 +112,6 @@ export async function POST(req: NextRequest): Promise<Response> {
         push({ type: 'done' });
 
       } catch (err) {
-        console.error('OpenAI Error:', err);
         const message = err instanceof Error ? err.message : 'Stream error';
         push({ type: 'error', message });
       } finally {
