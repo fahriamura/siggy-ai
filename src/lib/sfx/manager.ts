@@ -72,8 +72,15 @@ class SFXManager {
   async init() {
     if (this.ready || typeof window === 'undefined') return;
     const Howl = await getHowl();
+    
+    // Pre-initialize typing pool so it's ready for first response
+    if (this.typingPool.length === 0) {
+      for (const src of TYPING_SFX) {
+        this.typingPool.push(new Howl({ src: [src], volume: this.volume * 0.7, preload: true, loop: false }));
+      }
+    }
+    
     this.ready = true;
-    // do NOT preload all sounds here; use lazy initialization in play* methods
   }
 
   configure(enabled: boolean, volume: number) {
@@ -124,24 +131,27 @@ class SFXManager {
     this.stopTyping();
     // Reset index for new typing sequence
     this.typingIdx = 0;
-    // build typing pool lazily if necessary (async)
-    const makePool = () => {
-      if (this.typingPool.length === 0) {
-        return getHowl().then((Howl) => {
-          for (const src of TYPING_SFX) {
-            this.typingPool.push(new Howl({ src: [src], volume: this.volume * 0.7, preload: true, loop: false }));
-          }
-        });
-      }
-      return Promise.resolve();
-    };
-    makePool().finally(() => {
-      this.typingTimer = setInterval(() => {
-        const s = this.typingPool[this.typingIdx % this.typingPool.length];
-        this.typingPlaybackId = s?.play() ?? null;
-        this.typingIdx++;
-      }, ms);
-    });
+    
+    // Typing pool should already be initialized in init()
+    // If not (shouldn't happen), initialize now
+    if (this.typingPool.length === 0) {
+      getHowl().then((Howl) => {
+        for (const src of TYPING_SFX) {
+          this.typingPool.push(new Howl({ src: [src], volume: this.volume * 0.7, preload: true, loop: false }));
+        }
+        this._startTypingInterval(ms);
+      });
+    } else {
+      this._startTypingInterval(ms);
+    }
+  }
+
+  private _startTypingInterval(ms: number) {
+    this.typingTimer = setInterval(() => {
+      const s = this.typingPool[this.typingIdx % this.typingPool.length];
+      this.typingPlaybackId = s?.play() ?? null;
+      this.typingIdx++;
+    }, ms);
   }
 
   stopTyping() {
