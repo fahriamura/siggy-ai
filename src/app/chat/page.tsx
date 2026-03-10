@@ -32,16 +32,22 @@ export default function ChatPage() {
 
   const { response, inputMode, isLoading, isStreaming, sendMessage, onDialogDone } = useVNChat();
 
-  useEffect(() => { sfx.init(); }, []);
+  // Initialize SFX immediately
+  useEffect(() => {
+    sfx.init();
+  }, []);
   
-  // Apply settings to sfx manager
+  // Apply SFX volume settings
   useEffect(() => {
     sfx.configure(settings.sfxEnabled, settings.sfxVolume);
   }, [settings.sfxEnabled, settings.sfxVolume]);
   
-  // Apply BGM settings
+  // Apply BGM settings - trigger with a small delay to ensure initialization
   useEffect(() => {
-    sfx.playBgMusic(settings.bgMusicEnabled, settings.bgMusicVolume);
+    const timer = setTimeout(() => {
+      sfx.playBgMusic(settings.bgMusicEnabled, settings.bgMusicVolume);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [settings.bgMusicEnabled, settings.bgMusicVolume]);
 
   useEffect(() => {

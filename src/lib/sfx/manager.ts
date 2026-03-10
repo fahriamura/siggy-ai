@@ -158,7 +158,12 @@ class SFXManager {
   }
 
   async playBgMusic(enabled: boolean = true, volume: number = 0.25) {
-    if (!this.ready || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
+    
+    // Ensure manager is initialized first
+    if (!this.ready) {
+      await this.init();
+    }
     
     if (!this.bgMusic) {
       const Howl = await getHowl();
