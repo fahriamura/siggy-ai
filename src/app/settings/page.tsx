@@ -199,7 +199,7 @@ export default function SettingsPage() {
               </div>
               
               <div className="vn-label opacity-30 normal-case" style={{ letterSpacing: '0.05em', fontSize: '0.65rem' }}>
-                Built with Next.js & Claude AI
+                Built with Next.js & OpenAI API
               </div>
             </div>
           </Section>
